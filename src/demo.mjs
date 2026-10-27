@@ -132,7 +132,17 @@ for (let i = 0; i < CASES.length; i++) {
   const signMs = (performance.now() - t0).toFixed(1)
   say(pad('signature', 13) + 'local, ' + raw.length + ' hex chars, ' + signMs + ' ms, no provider call')
 
-  if (OFFLINE_ONLY) { signed++; continue }
+  // A signature is irrevocable: the signed transaction can still be broadcast
+  // later, so the invoice is spent the moment the key is used — not when the
+  // broadcast succeeds. Without this, --offline-only would let the same invoice
+  // through twice and the run would not match the table in the README.
+  wallet.markPaid(invoice, value)
+
+  if (OFFLINE_ONLY) {
+    signed++
+    say(pad('broadcast', 13) + 'skipped (--offline-only) — invoice marked spent')
+    continue
+  }
 
   const hash = await chain.sendRaw(raw)
   const rc = await chain.receipt(hash)
@@ -141,7 +151,6 @@ for (let i = 0; i < CASES.length; i++) {
   gasSpent += fee
   signed++
   nonce++
-  wallet.markPaid(invoice, value)
   say(pad('broadcast', 13) + 'ONLINE · ' + hash.slice(0, 22) + '… · block ' + (rc ? Number(BigInt(rc.blockNumber)) : 'pending'))
   say(pad('settled', 13) + ETH(value) + ' ETH → ' + short(to) + ' · fee ' + ETH(fee) + ' ETH')
 }

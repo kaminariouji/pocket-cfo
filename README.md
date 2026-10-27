@@ -86,6 +86,10 @@ node src/demo.mjs                            # full run
 node src/demo.mjs --offline-only             # stop before the broadcast
 ```
 
+`npm test` runs the egress-guard tests — no model, no chain, no network. They check that a
+socket or DNS lookup aimed anywhere but loopback throws, which is what makes the offline claim
+checkable rather than asserted.
+
 Requirements: Node >= 22.17, [Foundry](https://book.getfoundry.sh/) for `anvil`.
 The model weights (Llama 3.2 1B Instruct Q4_0) are fetched once by `@qvac/sdk`
 and then run from disk.

@@ -13,12 +13,22 @@ function isLoopback (host) {
   return LOOPBACK.test(String(host))
 }
 
+// net.Socket#connect accepts three shapes: an options object, (port, host) and
+// a single pipe path. Reading only the options object let (port, host) through,
+// which is exactly how a careless call would escape the guard.
+function target (args) {
+  const a0 = args[0]
+  if (a0 && typeof a0 === 'object') {
+    if (a0.path) return { host: '', local: true }
+    return { host: a0.host || (typeof args[1] === 'string' ? args[1] : '') }
+  }
+  if (typeof a0 === 'string') return { host: '', local: true } // pipe / unix socket path
+  return { host: typeof args[1] === 'string' ? args[1] : '' }
+}
+
 const origConnect = net.Socket.prototype.connect
 net.Socket.prototype.connect = function (...args) {
-  let host = ''
-  const a0 = args[0]
-  if (a0 && typeof a0 === 'object') host = a0.host || a0.path || ''
-  else if (typeof args[1] === 'string') host = args[1]
+  const { host } = target(args)
   if (!isLoopback(host)) {
     state.blocked.push(String(host))
     const err = new Error('egress blocked: ' + host)

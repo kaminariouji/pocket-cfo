@@ -1,18 +1,22 @@
 {
-  "name": "wdkfin",
+  "name": "pocket-cfo",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "type": "module",
+  "description": "Offline payment agent for the QVAC + WDK track: a local 1B model reads the instruction, the wallet's policy engine decides, the key signs offline, and exactly one step touches the network.",
+  "main": "src/demo.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "demo": "node src/demo.mjs",
+    "demo:offline": "node src/demo.mjs --offline-only",
+    "test": "node --test test/netguard.test.mjs"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "engines": {
+    "node": ">=22.17"
+  },
   "dependencies": {
     "@qvac/sdk": "^0.22.0",
     "@tetherto/wdk": "^1.0.0-beta.22",
     "@tetherto/wdk-wallet-evm": "^1.0.0-beta.24"
-  }
+  },
+  "license": "MIT"
 }
