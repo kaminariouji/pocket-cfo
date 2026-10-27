@@ -125,3 +125,22 @@ media/            recording harness (page + SSE server + playwright)
   are out of scope for this demo.
 
 MIT licensed.
+
+## What was built during the event
+
+Built during AI Yako (QVAC Hackathon, 27 October 2026): the agent loop, the
+intent validator, the WDK policy set (allowlisted payee, per-transaction cap,
+daily cap, duplicate invoice), the offline signing path, the demo harness and
+the video.
+
+## Existing code and third-party work
+
+No existing project of mine was submitted to this track. Third-party work is
+used as published libraries, not as copied source:
+
+- `@qvac/sdk` 0.22.0 (Apache-2.0) for local inference, with the Llama 3.2 1B
+  Instruct Q4_0 weights served by the QVAC registry.
+- `@tetherto/wdk` 1.0.0-beta.22 and `@tetherto/wdk-wallet-evm` (Apache-2.0)
+  for derivation and signing.
+- Foundry `anvil` (MIT) as the local test chain, using anvil's public test
+  mnemonic for the demo wallet.
