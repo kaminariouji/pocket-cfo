@@ -1,0 +1,62 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>pocket-cfo</title>
+<style>
+  :root { --bg:#0b0e12; --fg:#d8dee9; --dim:#6b7787; --green:#7ddc8a; --red:#ff6b6b; --amber:#f2c14e; --blue:#6cb6ff; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family:"Cascadia Mono",Consolas,monospace; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+  header { padding:16px 34px 11px; border-bottom:1px solid #1b2129; display:flex; align-items:flex-end; justify-content:space-between; }
+  h1 { margin:0; font-size:26px; letter-spacing:-0.5px; font-weight:600; }
+  h1 span { color:var(--blue); }
+  .sub { color:var(--dim); font-size:13.5px; margin-top:5px; }
+  .badges { display:flex; gap:8px; }
+  .badge { font-size:11.5px; padding:4px 9px; border:1px solid #232b35; border-radius:3px; color:var(--dim); transition:all .25s; }
+  .badge.on { color:#0b0e12; background:var(--green); border-color:var(--green); }
+  .badge.net { color:#0b0e12; background:var(--amber); border-color:var(--amber); }
+  main { flex:1; padding:12px 34px 20px; overflow-y:auto; }
+  pre { margin:0; font-size:11.4px; line-height:1.38; white-space:pre-wrap; word-break:break-word; }
+  .g { color:var(--green); } .r { color:var(--red); } .a { color:var(--amber); } .b { color:var(--blue); } .d { color:var(--dim); }
+  #cursor { display:inline-block; width:8px; height:15px; background:var(--fg); animation:blink 1s steps(1) infinite; vertical-align:-2px; }
+  @keyframes blink { 50% { opacity:0; } }
+</style></head>
+<body>
+<header>
+  <div>
+    <h1>pocket<span>-cfo</span></h1>
+    <div class="sub">the model reads · the wallet decides · the key signs offline · only the broadcast touches the network</div>
+  </div>
+  <div class="badges">
+    <div class="badge" id="b1">model</div>
+    <div class="badge" id="b2">policy</div>
+    <div class="badge" id="b3">sign</div>
+    <div class="badge" id="b4">broadcast</div>
+    <div class="badge" id="b5">0 external</div>
+  </div>
+</header>
+<main><pre id="out"></pre></main>
+<script>
+const out = document.getElementById('out')
+const badges = { model:document.getElementById('b1'), policy:document.getElementById('b2'), sign:document.getElementById('b3'), broadcast:document.getElementById('b4'), ext:document.getElementById('b5') }
+const paint = (s) => s
+  .replace(/ALLOW/g, '<span class="g">ALLOW</span>')
+  .replace(/DENY/g, '<span class="r">DENY</span>')
+  .replace(/NEEDS_HUMAN/g, '<span class="a">NEEDS_HUMAN</span>')
+  .replace(/ONLINE/g, '<span class="a">ONLINE</span>')
+  .replace(/PolicyViolationError/g, '<span class="r">PolicyViolationError</span>')
+  .replace(/^(pocket-cfo.*)$/gm, '<span class="b">$1</span>')
+let buf = ''
+const es = new EventSource('/run')
+es.onmessage = (e) => {
+  if (e.data.trim() === '') return
+  buf += e.data + '\n'
+  out.innerHTML = paint(buf) + '<span id="cursor"></span>'
+  if (/Llama 3\.2 1B/.test(buf)) badges.model.classList.add('on')
+  if (/policy\s+(ALLOW|DENY)/.test(buf)) badges.policy.classList.add('on')
+  if (/signature\s+local/.test(buf)) badges.sign.classList.add('on')
+  if (/broadcast\s+ONLINE/.test(buf)) badges.broadcast.classList.add('net')
+  const m = buf.match(/(\d+) external connections blocked/)
+  if (m) badges.ext.textContent = m[1] + ' external'
+  const box = document.querySelector('main'); box.scrollTop = box.scrollHeight
+}
+es.addEventListener('done', () => { es.close(); badges.ext.classList.add('on'); window.__done = true })
+</script>
+</body></html>
